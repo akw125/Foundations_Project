@@ -1,0 +1,111 @@
+import csv
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.svm import SVC, LinearSVC
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score, confusion_matrix
+
+X_txt = []
+y = []
+
+with open('train.tsv', encoding="utf8") as f:
+    train_reader = csv.reader(f, delimiter='\t', quoting = csv.QUOTE_NONE)
+    for row in train_reader:
+        X_txt.append(row[1])
+        y.append(row[2])
+
+
+X_txt_train, X_txt_test, y_train, y_test = train_test_split(X_txt, y, test_size=0.2, random_state=42)
+        
+        
+import numpy as np
+np.random.seed(42)
+import random
+random.seed(42)
+
+from sklearn.feature_extraction.text import TfidfVectorizer 
+
+vectorizer = TfidfVectorizer(ngram_range=(1,2), norm='l2') #I would chanage the ngram and norm here
+X_train = vectorizer.fit_transform(X_txt_train)
+X_test = vectorizer.transform(X_txt_test)
+        
+#vec = CountVectorizer(ngram_range = (1,2), min_df=1)
+
+#X_train = vec.fit_transform(X_txt_train) # This should be a matrix
+#X_test = vec.transform(X_txt_test) # This should be a matrix
+
+
+# SVM
+svc = LinearSVC(random_state=42)
+
+params = {'C': [0.1,1, 10, 100,1000]}
+
+
+clf = GridSearchCV(svc, params, scoring = 'accuracy', cv=10)
+
+clf.fit(X_train, y_train)
+
+
+preds_svm = clf.predict(X_test) 
+
+precision_svm = precision_score(y_test, preds_svm, average = 'micro') 
+recall_svm = recall_score(y_test, preds_svm, average = 'micro')
+f1_micro_svm = f1_score(y_test, preds_svm, average = 'micro')
+f1_macro_svm = f1_score(y_test, preds_svm, average = 'macro')
+accuracy_svm = accuracy_score(y_test, preds_svm)
+print("Precision: {:.4f}".format(precision_svm))
+print("Recall: {:.4f}".format(recall_svm))
+print("F1 micro: {:.4f}".format(f1_micro_svm))
+print("F1 macro: {:.4f}".format(f1_macro_svm))
+print("Accuracy: {:.4f}".format(accuracy_svm))
+
+
+# RandomForrest
+from sklearn.ensemble import RandomForestClassifier
+
+
+rf=RandomForestClassifier()
+
+params = {'n_estimators': (10,100)}
+
+clf_rf = GridSearchCV(rf, params, scoring= 'accuracy', cv=10)
+
+clf_rf.fit(X_train, y_train)
+
+pred_rf=clf_rf.predict(X_test)
+
+precision_rf = precision_score(y_test, pred_rf, average = 'micro')
+recall_rf = recall_score(y_test, pred_rf, average = 'micro')
+f1_micro_rf = f1_score(y_test, pred_rf, average = 'micro')
+f1_macro_rf = f1_score(y_test, pred_rf, average = 'macro')
+accuracy_rf = accuracy_score(y_test, pred_rf)
+print("Precision: {:.4f}".format(precision_rf))
+print("Recall: {:.4f}".format(recall_rf))
+print("F1 micro: {:.4f}".format(f1_micro_rf))
+print("F1 macro: {:.4f}".format(f1_macro_rf))
+print("Accuracy: {:.4f}".format(accuracy_rf))
+
+
+# Logistic Regression
+from sklearn.linear_model import LogisticRegression
+
+LogReg = LogisticRegression(random_state = 42)
+
+params = {'C': [0.1,1, 10, 100,1000]}
+
+LogReg_clf = GridSearchCV(LogReg, params, scoring= 'accuracy', cv=10)
+
+LogReg_clf.fit(X_train, y_train)
+
+pred_log_reg = LogReg_clf.predict(X_test)
+
+precision_log_reg = precision_score(y_test, pred_log_reg, average = 'micro')
+recall_log_reg = recall_score(y_test, pred_log_reg, average = 'micro')
+f1_micro_log_reg = f1_score(y_test, pred_log_reg, average = 'micro')
+f1_macro_log_reg = f1_score(y_test, pred_log_reg, average = 'macro')
+accuracy_log_reg = accuracy_score(y_test, pred_log_reg)
+print("Precision: {:.4f}".format(precision_log_reg))
+print("Recall: {:.4f}".format(recall_log_reg))
+print("F1 micro: {:.4f}".format(f1_micro_log_reg))
+print("F1 macro: {:.4f}".format(f1_macro_log_reg))
+print("Accuracy: {:.4f}".format(accuracy_log_reg))
